@@ -4,9 +4,9 @@ from dj_rest_auth.registration.views import (
 )
 from dj_rest_auth.views import (
     PasswordResetConfirmView,
-    PasswordResetView,
+    PasswordResetView
 )
-from klm.users.api.views import email_confirm_redirect, password_reset_confirm_redirect
+from klm.users.api.views import email_confirm_redirect, password_reset_confirm_redirect, LoginView
 from dj_rest_auth.registration.views import RegisterView
 from dj_rest_auth.views import UserDetailsView
 from django.urls import path
@@ -16,6 +16,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 urlpatterns = [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("login/", LoginView.as_view(), name="login"),
     path("register/", RegisterView.as_view(), name="rest_register"),
     path("me/", UserDetailsView.as_view(), name="rest_user_details"),
     path("register/verify-email/", VerifyEmailView.as_view(), name="rest_verify_email"),
@@ -29,4 +30,5 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
     path("password/reset/confirm/", PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
+
 ]
