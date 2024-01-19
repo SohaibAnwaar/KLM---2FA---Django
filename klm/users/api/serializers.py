@@ -8,23 +8,26 @@ from allauth.account.models import EmailAddress
 from allauth.account import app_settings as allauth_account_settings
 from allauth.account.utils import setup_user_email
 from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.files.base import ContentFile
 from rest_framework import serializers, exceptions
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from klm.users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # full_name = serializers.CharField(source=)
     class Meta:
         model = User
-        fields = ["uuid", "name", "email"]
+        fields = ["uuid", "name", "email", "username", "created_at"]
 
 
 class CustomRegisterSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255, required=True)
+    username = serializers.CharField(max_length=255, required=True, validators=[UnicodeUsernameValidator()])
     email = serializers.EmailField(required=True)
     password1 = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
@@ -48,7 +51,7 @@ class CustomRegisterSerializer(serializers.Serializer):
         return data
 
     def custom_signup(self, request, user):
-        breakpoint()
+        user.name = self.cleaned_data["name"]
         # create totp and qr for the user
         otp_base32 = pyotp.random_base32()
         otp_auth_url = pyotp.totp.TOTP(otp_base32).provisioning_uri(
@@ -66,6 +69,7 @@ class CustomRegisterSerializer(serializers.Serializer):
 
     def get_cleaned_data(self):
         return {
+            "name": self.validated_data.get('name', ''),
             'username': self.validated_data.get('username', ''),
             'password1': self.validated_data.get('password1', ''),
             'email': self.validated_data.get('email', ''),
@@ -83,21 +87,20 @@ class CustomRegisterSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     detail=serializers.as_serializer_error(exc)
                 )
-
         user = self.custom_signup(request, user)
         setup_user_email(request, user, [])
         return user
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    username = serializers.CharField(required=True)
     password = serializers.CharField(style={'input_type': 'password'})
 
-    def _validate_email(self, email, password):
-        if email and password:
-            user = self.authenticate(email=email, password=password)
+    def _validate_username(self, username, password):
+        if username and password:
+            user = self.authenticate(username=username, password=password)
         else:
-            msg = _('Must include "email" and "password".')
+            msg = _('Must include "username" and "password".')
             raise exceptions.ValidationError(msg)
 
         return user
@@ -114,11 +117,11 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError(_('E-mail is not verified.'))
 
     def validate(self, attrs: dict):
-        email = attrs.get("email")
+        username = attrs.get("username")
         password = attrs.get('password')
         user = authenticate(
             request=self.context.get("request"),
-            email=email,
+            username=username,
             password=password,
         )
         if not user:
@@ -129,16 +132,38 @@ class LoginSerializer(serializers.Serializer):
         self.validate_auth_user_status(user)
 
         # is the email verified?
-        self.validate_email_verification_status(user, email=email)
+        self.validate_email_verification_status(user)
 
         attrs['user'] = user
         return attrs
 
     def create(self, validated_data: dict):
         user: User = validated_data.get("user")
-        totp = pyotp.TOTP(user.otp_base32).now()
-        user.login_otp = make_password(totp)
-        user.otp_created_at = datetime.now(timezone.utc)
-        user.login_otp_used = False
-        user.save(update_fields=["login_otp", "otp_created_at", "login_otp_used"])
         return user
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    otp = serializers.CharField()
+    user_id = serializers.UUIDField()
+
+    def validate(self, attrs: dict):
+        user: User = User.objects.filter(pk=attrs.get("user_id")).first()
+        if not user:
+            raise exceptions.AuthenticationFailed("User Not found.")
+
+        totp = pyotp.TOTP(user.otp_base32).now()
+        if attrs.get("otp") != totp:
+            raise exceptions.AuthenticationFailed("Authentication Failed.")
+        attrs["user"] = user
+        return super().validate(attrs)
+
+    def create(self, validated_data: dict):
+        user: User = validated_data.get("user")
+        refresh = RefreshToken.for_user(user)
+        user.login_otp_used = True
+        user.save(update_fields=["login_otp_used"])
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+

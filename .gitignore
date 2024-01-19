@@ -278,3 +278,5 @@ dump.rdb
 .vscode
 db.sqlite3
 klm/media/
+
+.env

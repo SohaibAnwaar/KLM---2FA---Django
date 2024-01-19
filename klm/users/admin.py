@@ -24,11 +24,12 @@ class UserAdmin(auth_admin.UserAdmin):
             },
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+        (_("OTP"), {"fields": ("qr_code", "login_otp_used", "otp_created_at")})
     )
     list_display = ["email", "name", "is_staff", "is_active"]
     search_fields = ["name", "email"]
     ordering = ["email"]
-    readonly_fields = ("email",)
+    readonly_fields = ("email", "login_otp_used")
     add_fieldsets = (
         (
             None,

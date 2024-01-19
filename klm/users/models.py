@@ -3,6 +3,7 @@ import datetime
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from klm.common.models import CoreModel
@@ -25,7 +26,6 @@ class User(CoreModel, AbstractUser):
     Default custom user model for KLM Project.
     """
     # First and last name do not cover name patterns around the globe
-    username = None # type: ignore
     first_name = None  # type: ignore
     last_name = None  # type: ignore
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
@@ -34,11 +34,12 @@ class User(CoreModel, AbstractUser):
     otp_base32 = models.CharField(max_length=255, null=True)
     qr_code = models.ImageField(upload_to=get_qr_code_file_path, blank=True, null=True)
     login_otp = models.CharField(max_length=255, null=True, blank=True)
-    login_otp_used = models.BooleanField(default=True)
+    login_otp_used = models.BooleanField(default=False)
     otp_created_at = models.DateTimeField(blank=True, null=True)
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["email, name"]
+    EMAIL_FIELD = "email"
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email"]
 
     objects = UserManager()
 
