@@ -1,53 +1,56 @@
+# KLM Klimanjaro Core App
 
-# Django Boilerplate
-This boilier plate includes all of the basic features that you need to start a new project. It includes the following features:
-- User Registration
-- User Login
-- User Logout
-- Swagger Documentation
-- Zappa Deployment settings (AWS Lambda)
+Welcome to the KLM Klimanjaro Core App, a Django boilerplate with essential features to kickstart your project.
 
+## Getting Started
 
-## Generate Django Secret
-```bash
-python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
-```
+### 1. Set Up Virtual Environment
 
-## Installation
 ```bash
 # Clone the repo
 git clone https://github.com/lukuku-dev/django-rest-boilerplate.git
 # Change directory
 cd django-rest-boilerplate
-# See available pyton versions
+
+# Check available Python versions
 pyenv install --list
-# Install the python version
+# Install the desired Python version
 pyenv install 3.11
+
 # Create a virtual environment
-pyenv virtualenv 3.11 <env-name>
+python -m venv venv
+
 # Activate the virtual environment
-pyenv activate <env-name>
-# Please use pyenv here, if you want to attach this code with aws-lambda
-# Install the requirements
-pip install -r requirements.txt
-# rename .env.example to .env
-# Fill the variables
-# Run the migrations
+# On Windows
+.\venv\Scripts\activate
+# On macOS/Linux
+source venv/bin/activate
+```
+
+### 2. Install Requirements
+- Choose the appropriate requirements file based on your environment:
+
+- For production:
+```bash
+pip install -r requirements/production.txt
+```
+- For local development:
+
+```bash
+pip install -r requirements/local.txt
+```
+
+### Migrate Database
+```bash
 python manage.py migrate
-# Create a superuser
+```
+
+### 4. Create Superuser
+```bash
 python manage.py createsuperuser
-# Run the server
+```
+
+### 5. Run the Server
+```bash
 python manage.py runserver
 ```
-# Customization
-1. search `FIXME` and fill the variables
-
-## Deployment
-1. Create a new AWS account
-2. Create a new IAM user
-3. Create a new S3 bucket
-4. Create a new Lambda function
-5. Create a new API Gateway
-6. Set aws credentials in your local machine
-7. Set the variables in `zappa_settings.json`
-8. Run `zappa deploy dev`
