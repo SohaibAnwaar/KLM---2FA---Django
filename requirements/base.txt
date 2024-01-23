@@ -26,3 +26,5 @@ django-filter==23.5
 drf-spectacular==0.27.0  # https://github.com/tfranzel/drf-spectacular
 django-trench==0.3.1
 qrcode==7.3.1
+django-neomodel==0.1.1
+neo4j==5.12.0

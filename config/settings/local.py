@@ -11,7 +11,7 @@ SECRET_KEY = env(
     default="1zfrYbQYDC2as5RNTzaHJayUXLLZmSY7p3j8uErLntZzEYPxHLBjMdBRlfP4DONf",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[".vercel.app"])
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", ".vercel.app", "localhost"])
 
 # CACHES
 # ------------------------------------------------------------------------------

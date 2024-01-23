@@ -93,7 +93,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "klm.users",
+    "klm.users", "klm.intelligence"
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -236,3 +236,8 @@ MANAGERS = ADMINS
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+NEO4J_BOLT_URL = "bolt+s://3285a8c0d6c6a6ce8c2e5feda28fed40.neo4jsandbox.com:7687"
+NEOMODEL_SIGNALS = True
+NEO4J_URI = "neo4j+s://dd902419.databases.neo4j.io:7687"
+NEO4J_USER = "neo4j"
+NEO4J_PASSWORD = "mVcsfb2UNqnTzHK-gNxKndCojhFs112BRM6eRFS14Oc"

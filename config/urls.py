@@ -7,6 +7,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 # API URLS
 api_urlpatterns = [
     path("auth/", include("klm.users.api.urls")),
+    path("", include("klm.intelligence.urls"))
 ]
 
 urlpatterns = [
